@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Seven Segment</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .calculator {
+            background-color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.1);
+            width: 320px;
+        }
+        .display-container {
+            background-color: #051405;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 3px solid #222;
+            box-shadow: inset 0 0 15px rgba(0,255,0,0.1);
+            text-align: right;
+            overflow: hidden;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .display {
+            font-family: 'DSEG7 Classic', sans-serif; /* Menerapkan font 7-segment */
+            font-size: 38px;
+            color: #0f0; /* Warna hijau neon digital */
+            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        button {
+            padding: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            background-color: #444;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 4px #222;
+            transition: all 0.1s ease;
+        }
+        button:active {
+            box-shadow: 0 0 #222;
+            transform: translateY(4px);
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .btn-operator {
+            background-color: #ff9800;
+            color: #fff;
+            box-shadow: 0 4px #b36b00;
+        }
+        .btn-operator:hover {
+            background-color: #ffad33;
+        }
+        .btn-clear {
+            background-color: #e53935;
+            box-shadow: 0 4px #b71c1c;
+            grid-column: span 2;
+        }
+        .btn-clear:hover {
+            background-color: #ef5350;
+        }
+        .btn-equal {
+            background-color: #43a047;
+            box-shadow: 0 4px #1b5e20;
+            grid-column: span 2;
+        }
+        .btn-equal:hover {
+            background-color: #4caf50;
+        }
+        .btn-zero {
+            grid-column: span 3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="display-container">
+        <div class="display" id="display">0</div>
+    </div>
+    <div class="buttons">
+        <button class="btn-clear" onclick="clearDisplay()">C</button>
+        <button class="btn-operator" onclick="appendOperator('/')">&divide;</button>
+        <button class="btn-operator" onclick="appendOperator('*')">&times;</button>
+
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button class="btn-operator" onclick="appendOperator('-')">-</button>
+
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button class="btn-operator" onclick="appendOperator('+')">+</button>
+
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button class="btn-equal" onclick="calculate()">=</button>
+
+        <button class="btn-zero" onclick="appendNumber('0')">0</button>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    let currentInput = '0';
+    let isNewInput = true;
+
+    // Fungsi untuk memperbarui layar kalkulator
+    function updateDisplay() {
+        // Batasi tampilan maksimal 10 karakter agar tidak melebihi lebar layar
+        if(currentInput.length > 10) {
+            display.innerText = currentInput.substring(0, 10);
+        } else {
+            display.innerText = currentInput;
+        }
+    }
+
+    // Fungsi saat angka ditekan
+    function appendNumber(num) {
+        if (isNewInput) {
+            currentInput = num;
+            isNewInput = false;
+        } else {
+            if (currentInput === '0') {
+                currentInput = num;
+            } else {
+                currentInput += num;
+            }
+        }
+        updateDisplay();
+    }
+
+    // Fungsi saat operator ditekan (+, -, *, /)
+    function appendOperator(operator) {
+        let lastChar = currentInput.slice(-1);
+        
+        // Mencegah penumpukan operator (misal: ++ atau +-)
+        if (['+', '-', '*', '/'].includes(lastChar)) {
+            currentInput = currentInput.slice(0, -1) + operator;
+        } else {
+            currentInput += operator;
+        }
+        isNewInput = false;
+        updateDisplay();
+    }
+
+    // Fungsi untuk menghitung hasil
+    function calculate() {
+        try {
+            // Menggunakan eval() untuk evaluasi ekspresi matematika sederhana
+            let result = eval(currentInput);
+            
+            // Jika hasil adalah desimal, batasi hingga 4 angka di belakang koma
+            if(!Number.isInteger(result)) {
+                result = parseFloat(result.toFixed(4));
+            }
+            
+            currentInput = result.toString();
+            isNewInput = true;
+            updateDisplay();
+        } catch (error) {
+            currentInput = 'Error';
+            isNewInput = true;
+            updateDisplay();
+        }
+    }
+
+    // Fungsi untuk membersihkan layar (tombol C)
+    function clearDisplay() {
+        currentInput = '0';
+        isNewInput = true;
+        updateDisplay();
+    }
+</script>
+
+</body>
+</html>
